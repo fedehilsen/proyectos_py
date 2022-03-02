@@ -13,17 +13,27 @@ password TEXT NOT NULL);
 
 
 
+
+
 #Iniciar ventana
 window = Tk()
 
 window.title("Password Panager")
 
+
+#agarrar la contraseña y hashearla
 def hashpassword(input):
     hash = hashlib.md5(input)
     hash = hash.hexdigest()
 
+    #devolver la contraseña hasheada y legible
     return hash
 
+
+
+
+
+#creacion de master password
 def primera():
     window.geometry("250x180")
 
@@ -44,15 +54,25 @@ def primera():
     lbl2 = Label(window)
     lbl2.pack(pady=5)
 
+
+    #guardar la contraseña creada
     def savePassword():
         if txt.get() == txt1.get():
-            hashedpassword = hashpassword(txt.get().encode('utf-8'))
 
+            #mandar a hashear la contraseña
+            hashedpassword = hashpassword(txt.get().encode('utf-8'))
+            
+
+            #indicar en donde va a ir la contraseña en la db
             insert_password = """INSERT INTO masterpassword(password)
             VALUES(?) """
+
+            #mandar la contraseña a la db
             cursor.execute(insert_password, [(hashedpassword)])
             db.commit()
 
+
+            #ir al manager
             passwordvault()
         else:
             lbl2.config(text="Passwords dont match")
@@ -64,7 +84,7 @@ def primera():
 
 
 
-
+#pantalla para poner la master password una vez que ya la hayas creado
 def loginscreen():
     window.geometry("250x120")
 
@@ -76,19 +96,25 @@ def loginscreen():
     txt.pack(pady=5)
     txt.focus()
 
+
     def getmasterpassword():
+
+        #mandar a hashear la contraseña
         checkhashedpassword = hashpassword(txt.get().encode('utf-8'))
 
+        #buscar en la db si existe el mismo hash
         cursor.execute("SELECT * FROM masterpassword WHERE id = 1 AND password = ?", [(checkhashedpassword)])
         print(checkhashedpassword)
         return cursor.fetchall()
 
+    #chequear si la contraseña coincide
     def checkPassword():
         match = getmasterpassword()
 
         print(match)
 
         if match:
+            # ir al manager
             passwordvault()
         else:
             txt.delete(0, 'end')
@@ -100,7 +126,7 @@ def loginscreen():
     lbl1 = Label(window)
     lbl1.pack(pady=5)
 
-
+#password manager
 def passwordvault():
     for widget in window.winfo_children():
         widget.destroy()
@@ -112,7 +138,7 @@ def passwordvault():
 
 
 
-
+#fiharte si existe una base de datos
 cursor.execute("SELECT * FROM masterpassword")
 if cursor.fetchall():
     loginscreen()
